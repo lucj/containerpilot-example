@@ -1,0 +1,22 @@
+version: '2'
+services:
+  consul:
+    image: consul:0.7.2
+    restart: always
+    dns:
+      — 127.0.0.1
+    ports:
+      - "8500:8500"
+    command: agent -server -client=0.0.0.0 -bootstrap -ui
+  db:
+    build: ./db
+    restart: always
+    environment:
+      - CONSUL_HOST=consul
+  api:
+    build: ./api
+    restart: always
+    environment:
+      - CONSUL_HOST=consul
+    ports:
+      - "1337:1337"

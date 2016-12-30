@@ -1,0 +1,32 @@
+{
+  "consul": "localhost:8500",
+  "preStart": "/app/prestart.sh",
+  "services": [
+    {
+      "name": "api",
+      "health": "/usr/bin/curl -o /dev/null --fail -s http://localhost:1337/todos",
+      "poll": 3,
+      "ttl": 10,
+      "port": 1337
+    }
+  ],
+  "coprocesses": [
+    {
+      "command": ["/usr/local/bin/consul", "agent",
+                  "-data-dir=/data",
+                  "-config-dir=/config",
+                  "-rejoin",
+                  "-retry-join", "{{ if .CONSUL_HOST }}{{ .CONSUL_HOST }}{{ else }}consul{{ end }}",
+                  "-retry-max", "10",
+                  "-retry-interval", "10s"],
+      "restarts": "unlimited"
+    }
+  ],
+  "backends": [
+    {
+      "name": "db",
+      "poll": 3,
+      "onChange": "pkill -SIGHUP node"
+    }
+  ]
+}
